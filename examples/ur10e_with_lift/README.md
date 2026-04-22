@@ -17,18 +17,32 @@ Total: 7-DOF joint-space planning problem.
 
 ```
 ur10e_with_lift/
-├── README.md                    (this file)
+├── README.md                        (this file)
+├── urdf/
+│   └── ur10e_with_lift.urdf.xacro  (minimal xacro: UR10e on a prismatic lift)
 ├── xrdf/
-│   └── ur10e_with_lift.xrdf    (7-DOF XRDF — lift as first joint)
+│   └── ur10e_with_lift.xrdf        (7-DOF XRDF — lift as first joint)
 ├── config/
 │   ├── cumotion_params.yaml
-│   ├── ompl_planning.yaml
-│   └── isaac_ros_cumotion_planning.yaml
+│   └── visualize.rviz              (RViz layout with URDF + XRDF spheres)
 ├── launch/
-│   └── fallback.launch.py
+│   ├── visualize.launch.py         (visualize only — no planning)
+│   └── fallback.launch.py          (full cuMotion + OMPL stack)
 └── scripts/
     └── simple_plan_example.py
 ```
+
+## Quick start
+
+### Visualize first
+
+Before planning, verify the XRDF spheres align with the composite URDF (arm + lift):
+
+```bash
+ros2 launch $PWD/launch/visualize.launch.py
+```
+
+Drag the `lift` slider in the joint GUI — the column spheres should stay rigid on the column as it rises, and the arm (with its spheres) should move with it.
 
 ## Extra DOF — key differences vs plain UR10e
 

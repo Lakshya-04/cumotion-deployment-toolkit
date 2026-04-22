@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!-- UR10e mounted on a generic vertical prismatic lift.
+
+     This is a MINIMAL illustrative URDF — just enough geometry for planning
+     and visualization, not a physically-accurate model. Adapt for your own
+     robot.
+
+     Chain:
+         base_link → lift (prismatic, 0 .. 1.4 m) → lift_column
+             → arm_mount (fixed) → base_link_inertia (UR10e root)
+                 → ... standard UR10e chain → tool0
+-->
+<robot name="ur10e_with_lift" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- UR10e xacro from the public ur_description package -->
+    <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
+
+    <!-- ── Static base ──────────────────────────────────────────────── -->
+    <link name="base_link">
+        <visual>
+            <origin xyz="0 0 0.05" rpy="0 0 0"/>
+            <geometry><box size="0.5 0.5 0.1"/></geometry>
+            <material name="base_grey"><color rgba="0.5 0.5 0.5 1"/></material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.05" rpy="0 0 0"/>
+            <geometry><box size="0.5 0.5 0.1"/></geometry>
+        </collision>
+    </link>
+
+    <!-- ── Vertical lift prismatic joint ─────────────────────────────── -->
+    <link name="lift_column">
+        <visual>
+            <origin xyz="0 0 0.5" rpy="0 0 0"/>
+            <geometry><cylinder radius="0.09" length="1.0"/></geometry>
+            <material name="column_dark"><color rgba="0.3 0.3 0.3 1"/></material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.5" rpy="0 0 0"/>
+            <geometry><cylinder radius="0.09" length="1.0"/></geometry>
+        </collision>
+    </link>
+
+    <joint name="lift" type="prismatic">
+        <parent link="base_link"/>
+        <child link="lift_column"/>
+        <origin xyz="0 0 0.1" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit lower="0" upper="1.4" effort="200" velocity="0.5"/>
+    </joint>
+
+    <!-- ── Arm mount plate ──────────────────────────────────────────── -->
+    <link name="arm_mount">
+        <visual>
+            <origin xyz="0 0 0.025" rpy="0 0 0"/>
+            <geometry><box size="0.3 0.3 0.05"/></geometry>
+            <material name="mount_grey"><color rgba="0.4 0.4 0.4 1"/></material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.025" rpy="0 0 0"/>
+            <geometry><box size="0.3 0.3 0.05"/></geometry>
+        </collision>
+    </link>
+
+    <joint name="arm_mount_joint" type="fixed">
+        <parent link="lift_column"/>
+        <child link="arm_mount"/>
+        <origin xyz="0 0 1.0" rpy="0 0 0"/>
+    </joint>
+
+    <!-- ── UR10e arm mounted on top of arm_mount ────────────────────── -->
+    <xacro:ur_robot
+        name="ur10e"
+        tf_prefix=""
+        parent="arm_mount"
+        joint_limits_parameters_file="$(find ur_description)/config/ur10e/joint_limits.yaml"
+        kinematics_parameters_file="$(find ur_description)/config/ur10e/default_kinematics.yaml"
+        physical_parameters_file="$(find ur_description)/config/ur10e/physical_parameters.yaml"
+        visual_parameters_file="$(find ur_description)/config/ur10e/visual_parameters.yaml"
+        generate_ros2_control_tag="false">
+        <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    </xacro:ur_robot>
+
+</robot>

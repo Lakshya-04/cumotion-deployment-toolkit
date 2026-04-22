@@ -35,6 +35,21 @@ ur10e/
 
 ## Quick start
 
+### Visualize first (no planning, no cuMotion needed)
+
+Verify XRDF spheres align with URDF meshes:
+
+```bash
+ros2 launch $PWD/launch/visualize.launch.py
+```
+
+Opens RViz with:
+- UR10e robot model (from public `ur_description`)
+- XRDF collision spheres as `MarkerArray` on `/xrdf_spheres`
+- Joint sliders GUI — drive the arm through its range, confirm spheres track
+
+### Plan with cuMotion + OMPL
+
 1. Build: `colcon build --packages-select <your_pkg_wrapping_this_example>`
 2. Launch: `ros2 launch <your_pkg> fallback.launch.py`
 3. Test plan from Python:
