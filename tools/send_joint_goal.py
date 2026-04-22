@@ -62,6 +62,7 @@ from planner_dispatcher import PlannerConfig, PlannerDispatcher  # noqa: E402
 
 
 ANIM_HZ = 30.0
+GHOST_HZ = 10.0  # how often to republish goal ghost state
 
 
 class GoalSender(Node):
@@ -75,6 +76,28 @@ class GoalSender(Node):
         if args.from_current:
             self.create_subscription(JointState, "/joint_states",
                                      self._on_joint_state, 10)
+
+        # Goal ghost publisher — when set, the goal configuration is continuously
+        # republished to /goal/joint_states so a second robot_state_publisher
+        # can render a translucent ghost at the goal in RViz.
+        self._goal_ghost_pub = None
+        if args.publish_goal_ghost:
+            self._goal_ghost_pub = self.create_publisher(JointState, "/goal/joint_states", 10)
+            self._goal_ghost_positions: Optional[List[float]] = None
+            self.create_timer(1.0 / GHOST_HZ, self._tick_ghost)
+
+    def _tick_ghost(self) -> None:
+        if self._goal_ghost_pub is None or self._goal_ghost_positions is None:
+            return
+        msg = JointState()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.name = list(self._joint_names)
+        msg.position = list(self._goal_ghost_positions)
+        self._goal_ghost_pub.publish(msg)
+
+    def set_goal_ghost(self, positions: List[float]) -> None:
+        """Start continuously broadcasting this goal on /goal/joint_states."""
+        self._goal_ghost_positions = positions
 
     def _on_joint_state(self, msg: JointState) -> None:
         if self._current_state is not None:
@@ -192,6 +215,17 @@ def main() -> int:
     ap.add_argument("--loops", type=int, default=1)
     ap.add_argument("--hold-s", type=float, default=1.0)
 
+    # Goal ghost (for RViz visualization)
+    ap.add_argument(
+        "--publish-goal-ghost",
+        action="store_true",
+        help=(
+            "Republish the goal joint state on /goal/joint_states so a second "
+            "robot_state_publisher in the `goal_` namespace renders a ghost "
+            "arm at the target configuration in RViz."
+        ),
+    )
+
     args = ap.parse_args()
 
     # Validate
@@ -204,6 +238,11 @@ def main() -> int:
     sender = GoalSender(args)
     start = sender.resolve_start()
     goal = sender.resolve_goal()
+
+    # Start broadcasting goal ghost immediately so RViz sees it before planning starts
+    if args.publish_goal_ghost:
+        sender.set_goal_ghost(goal)
+        sender.get_logger().info("Broadcasting goal on /goal/joint_states for RViz ghost")
 
     sender.get_logger().info(
         f"Planning {len(args.joint_names)}-DOF\n  start: {[round(x, 3) for x in start]}"
