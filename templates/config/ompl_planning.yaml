@@ -1,0 +1,45 @@
+# OMPL planner configuration for the fallback pipeline.
+#
+# Adjust "manipulator" below to match your planning group name in SRDF.
+
+planning_plugin: ompl_interface/OMPLPlanner
+request_adapters: >-
+  default_planner_request_adapters/AddTimeOptimalParameterization
+  default_planner_request_adapters/ResolveConstraintFrames
+  default_planner_request_adapters/FixWorkspaceBounds
+  default_planner_request_adapters/FixStartStateBounds
+  default_planner_request_adapters/FixStartStateCollision
+  default_planner_request_adapters/FixStartStatePathConstraints
+start_state_max_bounds_error: 0.1
+
+# ── Planner configurations ───────────────────────────────────────────────
+# A good set for most manipulators. RRTConnect is fast;
+# RRTstar/PRM* give smoother paths at higher compute cost.
+planner_configs:
+  RRTConnectkConfigDefault:
+    type: geometric::RRTConnect
+    range: 0.0         # auto (usually 1/10 of state-space extent)
+
+  RRTstarkConfigDefault:
+    type: geometric::RRTstar
+    range: 0.0
+    goal_bias: 0.05
+    delay_collision_checking: 1
+
+  PRMkConfigDefault:
+    type: geometric::PRM
+
+  BiTRRTkConfigDefault:
+    type: geometric::BiTRRT
+
+# ── Per-group defaults ───────────────────────────────────────────────────
+# Replace "manipulator" with your SRDF planning group name.
+manipulator:
+  default_planner_config: RRTConnectkConfigDefault
+  planner_configs:
+    - RRTConnectkConfigDefault
+    - RRTstarkConfigDefault
+    - PRMkConfigDefault
+    - BiTRRTkConfigDefault
+  projection_evaluator: joints(joint_1,joint_2)
+  longest_valid_segment_fraction: 0.005

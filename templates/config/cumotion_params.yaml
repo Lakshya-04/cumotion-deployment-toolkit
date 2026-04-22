@@ -1,0 +1,70 @@
+# cuMotion parameters for the isaac_ros_cumotion action server.
+#
+# Rename the node namespace ("/**") to match your node's name if you want
+# to avoid applying these to every node. Or keep "/**" for simplicity.
+
+/**:
+  ros__parameters:
+    # ── Robot files ──────────────────────────────────────────────────────
+    robot: ""        # Path to XRDF (override in launch file)
+    urdf_path: ""    # Path to URDF (override in launch file)
+    tool_frame: "tool0"  # End-effector frame for task-space targets
+
+    # ── Trajectory timing ────────────────────────────────────────────────
+    time_dilation_factor: 1.0  # 1.0 = max speed (respect joint vel/acc limits)
+    interpolation_dt: 0.025    # Output trajectory timestep (40 Hz)
+
+    # ── CRITICAL: maximum_trajectory_dt ─────────────────────────────────
+    # Default cuRobo value (0.15) caps total trajectory time at
+    # num_trajopt_time_steps × 0.15. For 32 steps → 4.8s max. Long motions
+    # that need > 4.8s hit DT_EXCEPTION and fail.
+    #
+    # Set to 0.5 for 16s total budget (plenty for most arm motions).
+    # Requires patched cumotion_planner.py (see templates/scripts/).
+    maximum_trajectory_dt: 0.5
+
+    # ── Planning budget ──────────────────────────────────────────────────
+    curobo_timeout: 10.0   # Per-plan time budget (seconds)
+    max_attempts: 20       # Internal TrajOpt attempts before giving up
+
+    # ── Graph search seeds ───────────────────────────────────────────────
+    # Graph search is fast (~0.05s); more seeds cost little but widen
+    # coverage of the roadmap. 48-64 is a good sweet spot for 6-7 DOF.
+    num_graph_seeds: 48
+
+    # ── TrajOpt seeds ────────────────────────────────────────────────────
+    # More TrajOpt seeds = more parallel optimization attempts. Cost
+    # scales with GPU memory. On RTX 3050 keep at 32. On Orin/A100: 64.
+    num_trajopt_seeds: 32
+    num_trajopt_time_steps: 32  # Waypoint resolution. 32 for most, 48+ for tight corridors.
+    trajopt_finetune_iters: 200
+
+    # ── Seed strategy ────────────────────────────────────────────────────
+    # false (recommended): no forced retract seed, lets graph search
+    #   provide diverse seeds. Avoids "detour through home" artifacts.
+    # true: includes one seed that passes through the retract config.
+    #   Harmless on simple motions but produces weird trajectories on
+    #   large motions.
+    include_trajopt_retract_seed: false
+
+    # ── Topics ───────────────────────────────────────────────────────────
+    joint_states_topic: "/joint_states"
+
+    # ── Collision checking ───────────────────────────────────────────────
+    # PRIMITIVE: self-collision + cuboid/mesh attached objects (no ESDF)
+    # VOXEL: self-collision + nvblox ESDF for environment
+    collision_checker_type: "PRIMITIVE"
+    read_esdf_world: false       # true if using nvblox
+    add_ground_plane: false      # adds a ground plane at z=0
+    publish_curobo_world_as_voxels: false
+
+    # ── Cache sizes ──────────────────────────────────────────────────────
+    # Max attached collision objects cuRobo will track at once.
+    # Bump if your pipeline attaches many primitives.
+    collision_cache_cuboid: 20
+    collision_cache_mesh: 20
+
+    # ── Debug / integration ──────────────────────────────────────────────
+    enable_curobo_debug_mode: false  # true prints cuRobo internals
+    override_moveit_scaling_factors: true
+    update_link_sphere_server: "planner_attach_object"

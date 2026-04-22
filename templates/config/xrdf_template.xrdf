@@ -1,0 +1,82 @@
+# XRDF template for cuRobo / isaac_ros_cumotion.
+#
+# Replace bracketed <...> placeholders with your robot specifics. Comments
+# explain each section. Keep this file ASCII-only — cuRobo reads it as ASCII
+# and fails on non-ASCII characters (em-dash, arrows, etc.).
+#
+# Relevant docs:
+#   - https://curobo.org/advanced_examples/2_xrdf.html
+#   - docs/03_xrdf_authoring.md in this repo
+
+format: xrdf
+format_version: 1.0
+
+# ── cspace: which joints cuRobo optimizes ────────────────────────────────
+cspace:
+  joint_names:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+  # Physical limits. Match your URDF. cuRobo uses these as hard bounds.
+  acceleration_limits:   [12.0, 12.0, 12.0, 12.0, 12.0, 12.0]
+  jerk_limits:           [500.0, 500.0, 500.0, 500.0, 500.0, 500.0]
+  cspace_distance_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+  retract_config:        [0.0, -1.57, 1.57, 0.0, 1.57, 0.0]  # "home" pose
+
+# Default positions when generating baseline plans
+default_joint_positions:
+  joint_1: 0.0
+  joint_2: -1.57
+  joint_3: 1.57
+  joint_4: 0.0
+  joint_5: 1.57
+  joint_6: 0.0
+
+# ── Tool frame for task-space targets ────────────────────────────────────
+tool_frames: ["tool0"]
+
+# ── Collision: which links are checked for self-collision ────────────────
+collision:
+  geometry: auto_generated_collision_sphere_group  # name must match below
+
+# ── Self-collision ignore list ───────────────────────────────────────────
+# Pairs that should NEVER be checked (adjacent links, physically impossible).
+# Entries are symmetric: ignore:{A:[B]} ≡ ignore:{B:[A]}.
+#
+# Generate initial list from SRDF's <disable_collisions reason="Never|Adjacent"/>.
+self_collision:
+  ignore:
+    base_link: [link_1]          # adjacent
+    link_1:    [link_2]           # adjacent
+    link_2:    [link_3]           # adjacent
+    link_3:    [link_4]           # adjacent
+    link_4:    [link_5]           # adjacent
+    link_5:    [link_6]           # adjacent
+    link_6:    [tool0, flange]    # adjacent/child
+
+# ── Sphere geometry per link ─────────────────────────────────────────────
+# Each entry: list of {center: [x,y,z], radius: r} in the link's own frame.
+# Generate with FOAM/VAMP — see docs/04_sphere_fitting.md and
+# tools/generate_spheres_from_mesh.py.
+#
+# Empty list [] = no collision checking for this link (use for invisible
+# or zero-thickness frames like tool0 wrist-center).
+geometry:
+  auto_generated_collision_sphere_group:
+    spheres:
+      base_link:
+        - center: [0.0, 0.0, 0.1]
+          radius: 0.08
+      link_1:
+        - center: [0.0, 0.0, 0.0]
+          radius: 0.07
+      link_2:
+        - center: [0.0, 0.0, 0.1]
+          radius: 0.06
+        - center: [0.0, 0.0, 0.3]
+          radius: 0.06
+      # ... one entry per link in cspace + any fixed child links
+      tool0: []  # placeholder — add tool-specific spheres here

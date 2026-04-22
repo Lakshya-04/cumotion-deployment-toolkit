@@ -1,0 +1,36 @@
+# MoveIt planning pipeline config for isaac_ros_cumotion.
+#
+# Uses the MoveIt cumotion plugin so cumotion plans flow through the
+# standard move_group → plugin → cuMotion → request_adapters pipeline.
+#
+# Why the adapters matter:
+#
+#   AddTimeOptimalParameterization is MoveIt's TOTG (Time-Optimal
+#   Trajectory Generation). We re-parameterize cuMotion's raw output so:
+#   - Joint velocity/acceleration limits are strictly respected
+#   - Trajectory timings are monotonically increasing and stable
+#   - Downstream controllers (joint_trajectory_controller, etc.) see
+#     the smooth, per-joint-limit-scaled timing they expect
+#
+#   cuMotion's internal time parameterization optimizes for minimum-jerk
+#   but can produce timings that drift near kinematic limits — especially
+#   with custom maximum_trajectory_dt. TOTG re-scaling fixes that.
+#
+# Source: this is the production v1 pattern; do not skip the TOTG adapter.
+
+planning_plugin: isaac_ros_cumotion_moveit/CumotionPlanner
+
+request_adapters: >-
+  default_planner_request_adapters/FixWorkspaceBounds
+  default_planner_request_adapters/FixStartStateBounds
+  default_planner_request_adapters/FixStartStatePathConstraints
+  default_planner_request_adapters/AddTimeOptimalParameterization
+
+# Max bounds-error tolerance when snapping start state to valid space (rad/m).
+start_state_max_bounds_error: 0.1
+
+# Match to cumotion_params.yaml num_trajopt_time_steps.
+num_steps: 32
+
+# Topic cuMotion plugin uses to reach the cumotion action server.
+planner_action_topic: "/cumotion/motion_plan"

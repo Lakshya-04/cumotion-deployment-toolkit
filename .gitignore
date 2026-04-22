@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# ROS2 build artifacts
+build/
+install/
+log/
+.colcon/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime artifacts
+*.log
+runs/
+validation_results/run_*.json
+validation_results/*.jsonl
+
+# Secrets
+.env
+.env.local
+*.pem
+*.key
+
+# But keep example results
+!validation_results/example_run.json
