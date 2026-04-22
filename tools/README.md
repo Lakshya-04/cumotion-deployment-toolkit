@@ -19,7 +19,9 @@ pip install vamp
 |---|---|---|
 | `generate_spheres_from_mesh.py` | Create spheres for a single mesh (FOAM/VAMP/k-means) | No |
 | `tighten_xrdf_from_urdf.py` | Bulk refit every link's spheres in an XRDF against URDF meshes | No |
+| `xrdf_sphere_publisher.py` | Publish XRDF spheres as RViz markers for visual verification | Yes (TF tree for link frames) |
 | `validate_dataset.py` | Run cuMotion/OMPL over a pair dataset, save results + trajectories | Yes (move_group + cumotion) |
+| `send_joint_goal.py` | Send one joint goal (any DOF) via cuMotion+OMPL dispatcher; optional RViz replay | Yes (move_group + cumotion) |
 | `fcl_validate_trajectories.py` | Post-validate saved trajectories against FCL mesh collision | Yes (move_group) |
 | `replay_trajectories.py` | Publish saved trajectories on `/joint_states` for RViz replay | No (RViz optional) |
 | `sphere_blocker_analysis.py` | Find which XRDF spheres block the most pairs | No |
@@ -27,6 +29,12 @@ pip install vamp
 ## Typical workflow
 
 ```bash
+# 0. Visually verify your XRDF spheres align with meshes (run alongside RViz)
+ros2 run <your_pkg> xrdf_sphere_publisher \
+    --ros-args -p xrdf_path:=/path/to/robot.xrdf
+# (Or as plain script: python3 xrdf_sphere_publisher.py --ros-args -p xrdf_path:=...)
+# Move joints via joint_state_publisher_gui and watch spheres track the meshes.
+
 # 1. Generate initial XRDF spheres (if you don't have one)
 python generate_spheres_from_mesh.py --mesh robot_arm.stl --method foam --n 40 \
     --out spheres_arm.json
@@ -36,21 +44,30 @@ python tighten_xrdf_from_urdf.py \
     --urdf robot.urdf --xrdf-in robot.xrdf --xrdf-out robot_tight.xrdf \
     --package-root my_robot=/path/to/my_robot_pkg
 
-# 3. Launch your MoveIt + cumotion stack, then benchmark
+# 3. Send a quick single goal to smoke-test the stack
+python send_joint_goal.py \
+    --planning-group manipulator \
+    --joint-names shoulder_pan_joint shoulder_lift_joint elbow_joint \
+                  wrist_1_joint wrist_2_joint wrist_3_joint \
+    --start 0 -1.57 1.57 0 1.57 0 \
+    --goal  1.0 -1.2 1.8 -0.5 1.2 0.5 \
+    --replay
+
+# 4. Launch your MoveIt + cumotion stack, then benchmark a dataset
 python validate_dataset.py --dataset pairs.json --out-dir results/ \
     --planning-group manipulator --arm-joints <list> \
     --pipeline cumotion --save-trajectories
 
-# 4. Post-validate with FCL mesh check
+# 5. Post-validate with FCL mesh check
 python fcl_validate_trajectories.py --run results/run_cumotion_*.json \
     --planning-group manipulator
 
-# 5. Analyze blockers (helps decide what to shrink)
+# 6. Analyze blockers (helps decide what to shrink)
 python sphere_blocker_analysis.py \
     --dataset pairs.json --xrdf robot.xrdf --urdf robot.urdf \
     --joint-names <joint names> --top 20
 
-# 6. Replay for visual inspection
+# 7. Replay a batch of trajectories for visual inspection
 python replay_trajectories.py --run results/run_cumotion_*.json --loops 2
 ```
 
