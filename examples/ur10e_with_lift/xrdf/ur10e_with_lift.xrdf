@@ -1,0 +1,141 @@
+# UR10e + Vertical Lift — 7-DOF XRDF.
+#
+# Lift is a prismatic joint mounted below the arm base. Arm joints sit on
+# top of the lift.
+#
+# ASCII-only. Regenerate spheres with tools/tighten_xrdf_from_urdf.py.
+
+format: xrdf
+format_version: 1.0
+
+cspace:
+  joint_names:
+    - lift
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+  # Lift: 0.5 m/s^2 typical prismatic limit. Arm joints: 12 rad/s^2.
+  acceleration_limits: [0.5, 12.0, 12.0, 12.0, 12.0, 12.0, 12.0]
+  jerk_limits:         [5.0, 500.0, 500.0, 500.0, 500.0, 500.0, 500.0]
+  cspace_distance_weight: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+  retract_config: [0.5, 0.0, -1.57, 1.57, 0.0, 1.57, 0.0]
+
+default_joint_positions:
+  lift: 0.5
+  shoulder_pan_joint: 0.0
+  shoulder_lift_joint: -1.57
+  elbow_joint: 1.57
+  wrist_1_joint: 0.0
+  wrist_2_joint: 1.57
+  wrist_3_joint: 0.0
+
+tool_frames: ["tool0"]
+
+collision:
+  geometry: auto_generated_collision_sphere_group
+
+self_collision:
+  ignore:
+    # Base / lift chain
+    base_link:       [lift_column]
+    lift_column:     [arm_mount]
+    arm_mount:       [base_link_inertia]
+    # Arm adjacency
+    base_link_inertia: [shoulder_link]
+    shoulder_link:   [upper_arm_link]
+    upper_arm_link:  [forearm_link]
+    forearm_link:    [wrist_1_link]
+    wrist_1_link:    [wrist_2_link]
+    wrist_2_link:    [wrist_3_link]
+    wrist_3_link:    [flange, tool0]
+    # Arm vs lift column: ignore adjacent pairs (arm mounted right on top)
+    arm_mount:       [shoulder_link]
+
+geometry:
+  auto_generated_collision_sphere_group:
+    spheres:
+      # Static base
+      base_link:
+        - center: [0.0, 0.0, 0.05]
+          radius: 0.12
+
+      # Telescoping column — single tight column along Z in lift_column frame.
+      # lift_column moves up with the 'lift' joint. 7 spheres covering
+      # the column's full extent (tube half-width ~88 mm → R=125 mm covers
+      # corners for a square cross-section; use 0.10 for a round column).
+      lift_column:
+        - center: [0.0, 0.0, -0.90]
+          radius: 0.125
+        - center: [0.0, 0.0, -0.75]
+          radius: 0.125
+        - center: [0.0, 0.0, -0.60]
+          radius: 0.125
+        - center: [0.0, 0.0, -0.45]
+          radius: 0.125
+        - center: [0.0, 0.0, -0.30]
+          radius: 0.125
+        - center: [0.0, 0.0, -0.15]
+          radius: 0.125
+        - center: [0.0, 0.0, 0.0]
+          radius: 0.125
+
+      # Arm mount plate on top of lift
+      arm_mount:
+        - center: [0.0, 0.0, 0.05]
+          radius: 0.08
+
+      # ── Standard UR10e arm (same as plain UR10e example) ──────────────
+      base_link_inertia:
+        - center: [0.0, 0.0, 0.05]
+          radius: 0.08
+      shoulder_link:
+        - center: [0.0, 0.0, 0.0]
+          radius: 0.08
+      upper_arm_link:
+        - center: [0.0, 0.0, 0.175]
+          radius: 0.08
+        - center: [-0.088, 0.0, 0.175]
+          radius: 0.07
+        - center: [-0.175, 0.0, 0.175]
+          radius: 0.07
+        - center: [-0.262, 0.0, 0.175]
+          radius: 0.07
+        - center: [-0.350, 0.0, 0.175]
+          radius: 0.07
+        - center: [-0.437, 0.0, 0.175]
+          radius: 0.07
+        - center: [-0.525, 0.0, 0.175]
+          radius: 0.07
+        - center: [-0.612, 0.0, 0.175]
+          radius: 0.08
+      forearm_link:
+        - center: [0.0, 0.0, 0.03]
+          radius: 0.06
+        - center: [-0.095, 0.0, 0.03]
+          radius: 0.05
+        - center: [-0.191, 0.0, 0.03]
+          radius: 0.05
+        - center: [-0.286, 0.0, 0.03]
+          radius: 0.05
+        - center: [-0.381, 0.0, 0.03]
+          radius: 0.05
+        - center: [-0.476, 0.0, 0.03]
+          radius: 0.05
+        - center: [-0.572, 0.0, 0.03]
+          radius: 0.06
+      wrist_1_link:
+        - center: [0.0, 0.0, 0.0]
+          radius: 0.055
+      wrist_2_link:
+        - center: [0.0, 0.0, 0.0]
+          radius: 0.055
+      wrist_3_link:
+        - center: [0.0, 0.0, 0.0]
+          radius: 0.05
+        - center: [0.0, 0.0, 0.06]
+          radius: 0.05
+      flange: []
+      tool0: []

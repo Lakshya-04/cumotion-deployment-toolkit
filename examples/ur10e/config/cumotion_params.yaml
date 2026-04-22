@@ -1,0 +1,38 @@
+# cuMotion parameters for UR10e (6-DOF).
+#
+# Paths to XRDF/URDF are set by the launch file via parameter override.
+
+/**:
+  ros__parameters:
+    robot: ""
+    urdf_path: ""
+    tool_frame: "tool0"
+
+    time_dilation_factor: 1.0
+    interpolation_dt: 0.025
+
+    # With TOTG adapter (see isaac_ros_cumotion_planning.yaml) the internal
+    # timing matters less. Still, 0.5 gives headroom for long motions.
+    maximum_trajectory_dt: 0.5
+
+    curobo_timeout: 10.0
+    max_attempts: 20
+    num_graph_seeds: 48
+    num_trajopt_seeds: 32
+    num_trajopt_time_steps: 32
+    trajopt_finetune_iters: 200
+    include_trajopt_retract_seed: false
+
+    joint_states_topic: "/joint_states"
+
+    collision_checker_type: "PRIMITIVE"
+    read_esdf_world: false
+    add_ground_plane: false
+    publish_curobo_world_as_voxels: false
+
+    collision_cache_cuboid: 20
+    collision_cache_mesh: 20
+
+    enable_curobo_debug_mode: false
+    override_moveit_scaling_factors: true
+    update_link_sphere_server: "planner_attach_object"
