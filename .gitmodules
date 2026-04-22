@@ -1,0 +1,3 @@
+[submodule "nvblox-pipeline"]
+	path = nvblox-pipeline
+	url = https://github.com/Lakshya-04/nvblox-pipeline-toolkit.git

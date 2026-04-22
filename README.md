@@ -73,6 +73,20 @@ Ready-to-adapt launch files and config:
 ## Examples
 
 - `examples/ur10e/` — Plain UR10e example (Universal Robots arm, publicly available URDF)
+- `examples/ur10e_with_lift/` — 7-DOF arm + prismatic lift (generic; shows mimic-joint workaround)
+
+## Environment collision (nvblox)
+
+For robots that need real-time environment mapping (ESDF) as cuMotion's world collision source, see the companion repo wired in as a submodule:
+
+- [`nvblox-pipeline/`](nvblox-pipeline/) — depth-sensor → nvblox → ESDF pipeline with LiDAR conversion, multi-sensor sync, map persistence, and wall extrapolation patterns
+
+Clone with submodules:
+```bash
+git clone --recursive https://github.com/Lakshya-04/cumotion-deployment-toolkit.git
+# or after cloning:
+git submodule update --init --recursive
+```
 
 ## License
 
