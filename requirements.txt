@@ -1,0 +1,17 @@
+# Dependencies for the toolkit's tools and templates.
+# ROS 2 Humble's rclpy is NOT installed here — use your existing ROS 2 setup.
+
+# Sphere generation / geometry
+numpy>=1.24
+trimesh>=4.0
+scikit-learn>=1.3     # k-means fallback sphere fitting
+pyyaml>=6.0           # XRDF parsing
+
+# Visualization / diagnostics (optional but recommended)
+matplotlib>=3.5       # plot helpers in some tools
+
+# Best-quality sphere fitting (optional):
+# Install FOAM directly for medial-axis sphere packing:
+#   pip install git+https://github.com/CoMMALab/foam
+# Or via VAMP (which wraps FOAM and adds a reference planner):
+#   pip install vamp

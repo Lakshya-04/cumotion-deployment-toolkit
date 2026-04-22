@@ -75,11 +75,12 @@ Ready-to-adapt launch files and config:
 - `examples/ur10e/` — Plain UR10e example (Universal Robots arm, publicly available URDF)
 - `examples/ur10e_with_lift/` — 7-DOF arm + prismatic lift (generic; shows mimic-joint workaround)
 
-## Environment collision (nvblox)
+## Submodules
 
-For robots that need real-time environment mapping (ESDF) as cuMotion's world collision source, see the companion repo wired in as a submodule:
+Two companion repos wired in as submodules:
 
-- [`nvblox-pipeline/`](nvblox-pipeline/) — depth-sensor → nvblox → ESDF pipeline with LiDAR conversion, multi-sensor sync, map persistence, and wall extrapolation patterns
+- [`isaac_ros_cumotion/`](isaac_ros_cumotion/) — fork of NVIDIA's isaac_ros_cumotion (branch `patched-release-3.2`) with the 4 production patches applied (see [`PATCHES.md`](isaac_ros_cumotion/PATCHES.md) inside the submodule). Colcon-build this alongside your ROS 2 workspace.
+- [`nvblox-pipeline/`](nvblox-pipeline/) — depth-sensor → nvblox → ESDF pipeline with LiDAR conversion, multi-sensor sync, map persistence, and wall extrapolation patterns. Use when you need environment (world) collision for cuMotion.
 
 Clone with submodules:
 ```bash
@@ -87,6 +88,10 @@ git clone --recursive https://github.com/Lakshya-04/cumotion-deployment-toolkit.
 # or after cloning:
 git submodule update --init --recursive
 ```
+
+## Quickstart
+
+See [`TUTORIAL.md`](TUTORIAL.md) for a ~15-minute walkthrough from zero to a planned trajectory on UR10e.
 
 ## License
 

@@ -1,3 +1,7 @@
 [submodule "nvblox-pipeline"]
 	path = nvblox-pipeline
 	url = https://github.com/Lakshya-04/nvblox-pipeline-toolkit.git
+[submodule "isaac_ros_cumotion"]
+	path = isaac_ros_cumotion
+	url = https://github.com/Lakshya-04/isaac_ros_cumotion.git
+	branch = patched-release-3.2
